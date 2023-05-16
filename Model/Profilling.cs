@@ -1,5 +1,5 @@
 ﻿using CRUD_Tugas_MCC.Abstract;
-using CRUD_Tugas_MCC.Repository;
+using CRUD_Tugas_MCC.Context;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CRUD_Tugas_MCC.Model
 {
-    public class Profilling : Connection, ICRUD<List<Profilling>,Profilling>
+    public class Profilling : Connection
     {
         public Guid EmployeeId { get; set; }
         public int EducationId { get; set; }
@@ -24,7 +24,35 @@ namespace CRUD_Tugas_MCC.Model
 
         public List<Profilling> GetAll()
         {
-            throw new NotImplementedException();
+            List<Profilling> profillings = new List<Profilling>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(base.connectionString);
+                connection.Open();
+
+                SqlCommand command = new SqlCommand();
+                command.Connection = connection;
+                command.CommandText = "SELECT * FROM tb_tr_profillings";
+
+                using SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Profilling profilling = new Profilling();
+                        profilling.EmployeeId = reader.GetGuid(0);
+                        profilling.EducationId = reader.GetInt32(1);
+                        
+                        profillings.Add(profilling);
+                    }
+                    return profillings;
+                }
+            }
+            catch
+            {
+            }
+            return profillings;
         }
 
         public Profilling GetById(int id)
@@ -32,13 +60,14 @@ namespace CRUD_Tugas_MCC.Model
             throw new NotImplementedException();
         }
 
-        public void Insert(Profilling profilling)
+        public string Insert(Profilling profilling)
         {
-            SqlConnection connection = new SqlConnection(base.connectionString);
-            connection.Open();
+            string result = "";
+            var connection = Connections();
+            SqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                SqlTransaction transaction = connection.BeginTransaction();
+
                 SqlCommand command = new SqlCommand();
                 command.Connection = connection;
                 command.CommandText = "INSERT INTO tb_tr_profillings VALUES(@employeeId, @educationId)";
@@ -59,25 +88,19 @@ namespace CRUD_Tugas_MCC.Model
                 command.ExecuteNonQuery();
                 transaction.Commit();
 
-                Console.WriteLine("Insert Profilling Succesfully");
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
+            finally {
+                connection.Close();
+            }
+            return result;
 
         }
 
-
-        public void Update(Profilling input)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Delete(int id)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

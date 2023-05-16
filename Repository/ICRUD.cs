@@ -10,9 +10,9 @@ namespace CRUD_Tugas_MCC.Abstract
     {
         public Tall GetAll();
         public Tobject GetById(int id);
-        public void Insert(Tobject input);
-        public void Update(Tobject input);
-        public void Delete(int id);
+        public string Insert(Tobject input);
+        public string Update(Tobject input);
+        public string Delete(int id);
 
     }
 }

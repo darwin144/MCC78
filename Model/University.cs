@@ -1,5 +1,5 @@
 ﻿using CRUD_Tugas_MCC.Abstract;
-using CRUD_Tugas_MCC.Repository;
+using CRUD_Tugas_MCC.Context;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CRUD_Tugas_MCC.Model
 {
-    public class University : Connection, ICRUD<List<University>,University>
+    public class University : Connection
     {
         public int IdUniversity { get; set; }
         public string Name { get; set; }
@@ -30,7 +30,6 @@ namespace CRUD_Tugas_MCC.Model
         {
             Name = name;
         }
-
 
         public List<University> GetAll()
         {
@@ -123,8 +122,9 @@ namespace CRUD_Tugas_MCC.Model
             }
             return result;
         }
-        public void Insert(University university)
+        public string Insert(string name)
         {
+            string result = "";
             SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
 
@@ -139,14 +139,13 @@ namespace CRUD_Tugas_MCC.Model
                 SqlParameter Pname = new SqlParameter();
                 Pname.ParameterName = "@name";
                 Pname.SqlDbType = SqlDbType.VarChar;
-                Pname.Value = university.Name;
+                Pname.Value = name;
                 command.Parameters.Add(Pname);
 
                 command.ExecuteNonQuery();
                 transaction.Commit();
-
-                Console.WriteLine("Inserted Succesfully");
-
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
@@ -155,10 +154,12 @@ namespace CRUD_Tugas_MCC.Model
             finally {
                 connection.Close();
             }
+            return result;
         }
 
-        public void Update(University university)
+        public string Update(int id, string input)
         {
+            string result = "";
             SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
 
@@ -173,21 +174,20 @@ namespace CRUD_Tugas_MCC.Model
                 SqlParameter Pid = new SqlParameter();
                 Pid.ParameterName = "@id";
                 Pid.SqlDbType = SqlDbType.VarChar;
-                Pid.Value = university.IdUniversity;
+                Pid.Value = id;
 
                 SqlParameter Pname = new SqlParameter();
                 Pname.ParameterName = "@name";
                 Pname.SqlDbType = SqlDbType.VarChar;
-                Pname.Value = university.Name;
+                Pname.Value = input;
 
                 command.Parameters.Add(Pid);
                 command.Parameters.Add(Pname);
 
                 command.ExecuteNonQuery();
                 transaction.Commit();
-
-                Console.WriteLine("Updated Succesfully");
-
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
@@ -197,11 +197,12 @@ namespace CRUD_Tugas_MCC.Model
             {
                 connection.Close();
             }
+            return result;
         }
 
-        public void Delete(int id)
+        public string Delete(int id)
         {
-
+            string result = "";
             SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
 
@@ -222,7 +223,8 @@ namespace CRUD_Tugas_MCC.Model
                 command.ExecuteNonQuery();
                 transaction.Commit();
 
-                Console.WriteLine("Deleted Succesfully");
+                result = "success";
+                return result;
 
             }
             catch (Exception ex)
@@ -233,6 +235,7 @@ namespace CRUD_Tugas_MCC.Model
             {
                 connection.Close();
             }
+            return result;
         }
     }
 

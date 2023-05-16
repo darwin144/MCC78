@@ -1,5 +1,5 @@
 ﻿using CRUD_Tugas_MCC.Abstract;
-using CRUD_Tugas_MCC.Repository;
+using CRUD_Tugas_MCC.Context;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CRUD_Tugas_MCC.Model
 {
-    public class Education : University, ICRUD<List<Education>,Education>
+    public class Education : University, ICRUD<List<Education>, Education>
     {
         public int Id { get; set; }
         public string Major { get; set; }
@@ -85,15 +85,19 @@ namespace CRUD_Tugas_MCC.Model
                 command.Connection = connection;
                 command.CommandText = "SELECT * FROM tb_m_educations WHERE id =@id";
 
-
+                SqlParameter Pid = new SqlParameter();
+                Pid.ParameterName = "@id";
+                Pid.SqlDbType = SqlDbType.Int;
+                Pid.Value = id;
+                command.Parameters.AddWithValue("@id", id);
 
                 using SqlDataReader reader = command.ExecuteReader();
                 if (reader.HasRows)
                 {
                     reader.Read();
                     education.Id = reader.GetInt32(0);
-                    education.Name = reader.GetString(1);
-                    education.Major = reader.GetString(2);
+                    education.Major = reader.GetString(1);
+                    education.Degree = reader.GetString(2);
                     education.GPA = reader.GetString(3);
                     education.IdUniversity = reader.GetInt32(4);
                     return education;
@@ -141,8 +145,9 @@ namespace CRUD_Tugas_MCC.Model
             return result;
         }
 
-        public void Insert(Education education)
+        public string Insert(Education education)
         {
+            string result = "";
             SqlConnection connection = new SqlConnection(base.connectionString);
             connection.Open();
 
@@ -181,7 +186,8 @@ namespace CRUD_Tugas_MCC.Model
                 command.ExecuteNonQuery();
                 transaction.Commit();
 
-                Console.WriteLine("Inserted Success");
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
@@ -189,11 +195,67 @@ namespace CRUD_Tugas_MCC.Model
             }
             finally {
                 connection.Close();
-            }            
+            }
+            return result;
         }
 
-        public void Update(Education education)
+        public void Insert2(Education education)
         {
+            SqlConnection connection = new SqlConnection(base.connectionString);
+            connection.Open();
+            using SqlTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                //using SqlTransaction transaction = connection.BeginTransaction();
+                SqlCommand command = new SqlCommand();
+                command.Connection = connection;
+                command.CommandText = "INSERT INTO tb_m_educations(major,degree,gpa,university_id) VALUES (@major,@degree,@gpa, @universityId)";
+                command.Transaction = transaction;
+
+                SqlParameter Pmajor = new SqlParameter();
+                Pmajor.ParameterName = "@major";
+                Pmajor.SqlDbType = SqlDbType.VarChar;
+                Pmajor.Value = education.Major;
+                command.Parameters.Add(Pmajor);
+
+                SqlParameter Pdegree = new SqlParameter();
+                Pdegree.ParameterName = "@degree";
+                Pdegree.SqlDbType = SqlDbType.VarChar;
+                Pdegree.Value = education.Degree;
+                command.Parameters.Add(Pdegree);
+
+                SqlParameter Pgpa = new SqlParameter();
+                Pgpa.ParameterName = "@gpa";
+                Pgpa.SqlDbType = SqlDbType.VarChar;
+                Pgpa.Value = education.GPA;
+                command.Parameters.Add(Pgpa);
+
+                SqlParameter PuniversityId = new SqlParameter();
+                PuniversityId.ParameterName = "@universityId";
+                PuniversityId.SqlDbType = SqlDbType.Int;
+                PuniversityId.Value = education.IdUniversity;
+                command.Parameters.Add(PuniversityId);
+
+                command.ExecuteNonQuery();
+                //transaction.Commit();
+
+                Console.WriteLine("Inserted Success");
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                Console.WriteLine(ex.Message);
+            }
+           /* finally
+            {
+                connection.Close();
+            }*/
+        }
+
+        public string Update(Education education)
+        {
+            string result = "";
             SqlConnection connection = new SqlConnection();
             connection.Open();
 
@@ -237,8 +299,8 @@ namespace CRUD_Tugas_MCC.Model
 
                 command.ExecuteNonQuery();
                 transaction.Commit();
-
-                Console.WriteLine("Updated Successfully");
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
@@ -248,13 +310,13 @@ namespace CRUD_Tugas_MCC.Model
             {
                 connection.Close();
             }
-
+            return result;
         }
 
-        public void Delete(int id)
+        public string Delete(int id)
         {
-            SqlConnection connection = new SqlConnection();
-            connection.Open();
+            string result = "";
+            var connection = Connections();
             try
             {
                 using SqlTransaction transaction = connection.BeginTransaction();
@@ -271,8 +333,8 @@ namespace CRUD_Tugas_MCC.Model
 
                 command.ExecuteNonQuery();
                 transaction.Commit();
-
-                Console.WriteLine("Deleted Successfully");
+                result = "success";
+                return result;
             }
             catch (Exception ex)
             {
@@ -282,6 +344,7 @@ namespace CRUD_Tugas_MCC.Model
             {
                 connection.Close();
             }
+            return result;
         }
     }
 }

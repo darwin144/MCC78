@@ -1,5 +1,5 @@
 ﻿using CRUD_Tugas_MCC.Abstract;
-using CRUD_Tugas_MCC.Repository;
+using CRUD_Tugas_MCC.Context;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,45 @@ namespace CRUD_Tugas_MCC.Model
 
         public List<Employee> GetAll()
         {
-            throw new NotImplementedException();
+            List<Employee> employees = new List<Employee>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(base.connectionString);
+                connection.Open();
+
+                SqlCommand command = new SqlCommand();
+                command.Connection = connection;
+                command.CommandText = "SELECT * FROM tb_m_employees";
+
+                using SqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Employee employee1 = new Employee();
+                        employee1.Id = reader.GetGuid(0);
+                        employee1.NIK = reader.GetString(1);
+                        employee1.FirstName = reader.GetString(2);
+                        employee1.LastName = reader.GetString(3);
+                        employee1.Birthdate = reader.GetDateTime(4);
+                        employee1.Gender = reader.GetString(5);
+                        employee1.HiringDate = reader.GetDateTime(6);
+                        employee1.Email = reader.GetString(7);
+                        employee1.PhoneNumber = reader.GetString(8);
+                        employee1.DepartmentId = reader.GetString(9);
+
+
+                        employees.Add(employee1);
+                    }
+                    return employees;
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return employees;
         }
 
         public Employee GetById(int id)
@@ -83,9 +121,9 @@ namespace CRUD_Tugas_MCC.Model
             return result;
         }
 
-        public void Insert(Employee employee)
+        public string Insert(Employee employee)
         {
-            
+            string result = "";   
             string sql = "INSERT INTO tb_m_employees(nik, first_Name, last_Name, birthdate, gender, hiring_Date, email, phone_Number, department_Id) VALUES (@nik,@firstName,@lastName,@birthdate,@gender,@hiringDate, @email, @phoneNumber, @departmentId)";
             SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
@@ -155,23 +193,26 @@ namespace CRUD_Tugas_MCC.Model
                 command.ExecuteNonQuery();
                 transaction.Commit();
 
-                Console.WriteLine("Insert Employee Successfully");           
+                result = "success";
+                return result;
             }
             catch(Exception ex)
             {
                 transaction.Rollback();
                 Console.WriteLine(ex.Message);
             }
+            return result;
         }
 
-        public void Update(Employee input)
+        public string Update(Employee input)
         {
             throw new NotImplementedException();
         }
 
-        public void Delete(int id)
+        public string Delete(int id)
         {
             throw new NotImplementedException();
         }
+
     }
 }
